@@ -80,33 +80,33 @@ void test_GPU(void)
     y = (int*)malloc(N*sizeof(int));
 
     int *cuda_x, *cuda_y;
-    CHECKERR( cudaMalloc((void**)&cuda_x, N*sizeof(int)) );
-    CHECKERR( cudaMalloc((void**)&cuda_y, N*sizeof(int)) );
+    CHECK_ERR( cudaMalloc((void**)&cuda_x, N*sizeof(int)) );
+    CHECK_ERR( cudaMalloc((void**)&cuda_y, N*sizeof(int)) );
     
 
     // generate data
     randomize(x, y, &a);
 
     // copy data to GPU
-    CHECKERR( cudaMemcpy(cuda_x, x, N*sizeof(int), cudaMemcpyHostToDevice) );
-    CHECKERR( cudaMemcpy(cuda_y, y, N*sizeof(int), cudaMemcpyHostToDevice) );
+    CHECK_ERR( cudaMemcpy(cuda_x, x, N*sizeof(int), cudaMemcpyHostToDevice) );
+    CHECK_ERR( cudaMemcpy(cuda_y, y, N*sizeof(int), cudaMemcpyHostToDevice) );
 
     clock_t start = clock();
 
     // compute on the GPU
     saxpy_kernel<<<(N + T - 1) / T, T>>>(a, cuda_x, cuda_y);
-    LASTERR();
+    LAST_ERR();
 
     clock_t end = clock();
     double elapsed = ((double)end - start)*1000.0 / (CLOCKS_PER_SEC);
     
-    CHECKERR( cudaMemcpy(x, cuda_x, N*sizeof(int), cudaMemcpyDeviceToHost) );
-    CHECKERR( cudaMemcpy(y, cuda_y, N*sizeof(int), cudaMemcpyDeviceToHost) );
+    CHECK_ERR( cudaMemcpy(x, cuda_x, N*sizeof(int), cudaMemcpyDeviceToHost) );
+    CHECK_ERR( cudaMemcpy(y, cuda_y, N*sizeof(int), cudaMemcpyDeviceToHost) );
     print(a, x, y);
     printf("Elapsed time: %lf ms\n", elapsed);
 
-    CHECKERR( cudaFree(cuda_x) );
-    CHECKERR( cudaFree(cuda_y) );
+    CHECK_ERR( cudaFree(cuda_x) );
+    CHECK_ERR( cudaFree(cuda_y) );
     free(x);
     free(y);
 }

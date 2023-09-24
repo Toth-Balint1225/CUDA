@@ -1,0 +1,60 @@
+
+---------------------------------
+ N = 4, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 0.107424 ms
+
+---------------------------------
+ N = 8, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 0.098400 ms
+
+---------------------------------
+ N = 16, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 0.123872 ms
+
+---------------------------------
+ N = 32, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 0.243456 ms
+
+---------------------------------
+ N = 64, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 1.269664 ms
+
+---------------------------------
+ N = 128, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 9.266240 ms
+
+---------------------------------
+ N = 256, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 73.244003 ms
+
+---------------------------------
+ N = 512, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 584.848999 ms
+
+---------------------------------
+ N = 1024, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 4671.813477 ms
+
+---------------------------------
+ N = 2048, T = 32
+[TIME] CUDA measurement started.
+[TIME] CUDA measurement ended.
+[TIME] CUDA elapsed time = 37346.281250 ms

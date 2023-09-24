@@ -1,0 +1,54 @@
+
+---------------------------------
+ N = 4, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 0.001843 ms
+
+---------------------------------
+ N = 8, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 0.005844 ms
+
+---------------------------------
+ N = 16, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 0.038052 ms
+
+---------------------------------
+ N = 32, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 0.376598 ms
+
+---------------------------------
+ N = 64, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 2.376146 ms
+
+---------------------------------
+ N = 128, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 20.522914 ms
+
+---------------------------------
+ N = 256, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 168.288377 ms
+
+---------------------------------
+ N = 512, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 1443.358858 ms
+
+---------------------------------
+ N = 1024, T = 32
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 15206.240284 ms

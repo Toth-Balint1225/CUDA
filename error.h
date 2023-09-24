@@ -1,7 +1,10 @@
+#ifndef CUDA_ERROR_H
+#define CUDA_ERROR_H
+
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#define CHECKERR(call) checkerr((call), #call, __FILE__, __LINE__)
+#define CHECK_ERR(call) checkerr((call), #call, __FILE__, __LINE__)
 void checkerr(cudaError_t err, const char* func, const char* file, int line)
 {
     if (err != cudaSuccess)
@@ -10,7 +13,7 @@ void checkerr(cudaError_t err, const char* func, const char* file, int line)
     }
 }
 
-#define LASTERR() lasterr(__FILE__, __LINE__)
+#define LAST_ERR() lasterr(__FILE__, __LINE__)
 void lasterr(const char* file, int line)
 {
     cudaError_t err = cudaGetLastError();
@@ -19,3 +22,5 @@ void lasterr(const char* file, int line)
         fprintf(stderr, "[CUDA] ERROR at %s:%d\n%s\n", file, line, cudaGetErrorString(err));
     }
 }
+
+#endif // CUDA_ERROR_H

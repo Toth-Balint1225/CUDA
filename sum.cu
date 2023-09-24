@@ -1,69 +1,70 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
+#include "error.h"
+#include "timetest.h"
 
-#define N 16
-#define T 4
+// #define N 16
+// #define N 16777216
+#define N 33554432
+// #define N 1024
+#define T 256
 
-static struct timespec time_measure_start;
-static struct timespec time_measure_end;
-
-#define TIME_START() \
-do { \
-    clock_gettime(CLOCK_MONOTONIC, &time_measure_start); \
-    printf("[TIME] Measurement started.\n"); \
-} while (0)
-
-#define TIME_END() \
-do { \
-    clock_gettime(CLOCK_MONOTONIC, &time_measure_end); \
-    printf("[TIME] Measurement ended.\n"); \
-    printf("[TIME] Elapsed time = %f ms\n", ((time_measure_end.tv_sec * 1000000000 + time_measure_end.tv_nsec) - (time_measure_start.tv_sec * 1000000000 + time_measure_start.tv_nsec)) / 1000000.0); \
-} while (0)
-
-#define CHECK_ERR(val) check_err((val), #val, __FILE__, __LINE__)
-void check_err(cudaError_t err, const char* const func, const char* const file, const int line)
+// OMG awesome GPU accelerated algorithm 2023 Elon Musk Spacex magic hype XD
+__global__ void collect1(int* a, int* sum)
 {
-    if (err != cudaSuccess)
+    int i = 0;
+    while (i<N)
     {
-        fprintf(stderr, "[CUDA] Error at %s:%d\n%s %s\n", file, line, cudaGetErrorString(err), func);
+        *sum += a[i];
+        i++;
     }
 }
 
-#define LAST_ERR() last_err(__FILE__, __LINE__)
-void last_err(const char* const file, const int line)
+// actual SIMT log2 sum
+__global__ void collect(int* a, int* sum, int n, int maxloop)
 {
-    cudaError_t err = cudaGetLastError();
-
-    if (err != cudaSuccess)
+    int loop = 0;
+    int tid = blockDim.x * blockIdx.x + threadIdx.x;
+    while (loop < maxloop) 
     {
-        fprintf(stderr, "[CUDA] Error at %s:%d\n%s\n",file, line, cudaGetErrorString(err));
+        int stride = 1 << loop;
+        if (tid % (stride * 2) == 0) // collector cell
+        {
+            // find its pair and add this to it
+            int pair = tid + stride;
+            if (pair < n)
+                a[tid] += a[pair];
+            //printf("[KERNEL] loop %d tid %d pair %d stride %d\n", loop, tid, pair, stride);
+        }
+        loop++;
+        __syncthreads();
     }
+    *sum = a[0];
 }
 
-// this is where the reduce magic happens
-__global__ void add(int* a, int* sum)
+// works only if n is a power of 2
+__global__ void collect_simplified(int* a, int* sum, int n)
 {
     int tid = blockDim.x * blockIdx.x + threadIdx.x;
-
-    __shared__ int subtotal;
-
-
-    // increment the subtotals with each thread
-    subtotal += a[tid];
-    printf("[KERNEL] block %d thread %d tid %d value %d sub %d\n", blockIdx.x, threadIdx.x, tid,a[tid], subtotal);
-
-    __syncthreads();
-
-    *sum = subtotal;
-/*
-    int i=0;
-    while (i < blockDim.x)
+    n /= 2;
+    
+    while (n != 0)
     {
-        i ++;
+        if (tid < n)
+            a[tid] += a[tid + n];
+        __syncthreads();
+        n /= 2;
     }
-*/
+    *sum = a[0];
+}
+
+int control(int* a)
+{
+    int sum = 0;
+    for (int i=0;i<N;i++)
+        sum += a[i];
+    return sum;
 }
 
 int add_cpu(int* a, size_t n)
@@ -88,6 +89,16 @@ void print_res(int* a, int sum, size_t n)
     printf("= %d\n", sum);
 }
 
+int my_log2(int n)
+{
+  int k = n, i = 0;
+  while(k) {
+    k >>= 1;
+    i++;
+  }
+  return i - 1;
+}
+
 int main(void)
 {
     size_t n = N;
@@ -101,18 +112,24 @@ int main(void)
     int* dev_sum = {0};
     CHECK_ERR( cudaMalloc((void**)&dev_sum, sizeof(int)) );
 
-    TIME_START();
+    CUDA_TIME_START();
 
-    add<<<(N + T - 1) / T, T>>>(dev_a, dev_sum);
+    //collect1<<<1,1>>>(dev_a, dev_sum);
+    //collect_simplified<<<(N + T - 1) / T, T>>>(dev_a, dev_sum, N);
+    collect<<<(N + T - 1) / T, T>>>(dev_a, dev_sum, N, my_log2(N));
     //sum = add_cpu(a, n);
 
-    TIME_END();
+    CUDA_TIME_END();
     LAST_ERR();
 
 
     CHECK_ERR( cudaMemcpy(&sum, dev_sum, sizeof(int), cudaMemcpyDeviceToHost) );
 
-    print_res(a, sum, n);
+    //print_res(a, sum, n);
+    TIME_START();
+    int c = control(a);
+    TIME_END();
+    //printf("[CONTROL] sum = %d\n", c);
     CHECK_ERR( cudaFree(dev_a) );
     CHECK_ERR( cudaFree(dev_sum) );
     free(a);
