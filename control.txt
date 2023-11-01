@@ -52,3 +52,15 @@
 [TIME] Measurement started.
 [TIME] Measurement ended.
 [TIME] Elapsed time = 15206.240284 ms
+
+---------------------------------
+ N = 2048, T = 1
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 426214.280659 ms
+
+---------------------------------
+ N = 4096, T = 1
+[TIME] Measurement started.
+[TIME] Measurement ended.
+[TIME] Elapsed time = 3845796.341136 ms

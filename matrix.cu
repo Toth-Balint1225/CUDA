@@ -141,34 +141,33 @@ int main(int argc, char** argv)
     CHECK_ERR(cudaMemcpy(dev_b, b, sizeof(int) * n * n, cudaMemcpyHostToDevice));
 
     printf("\n---------------------------------\n N = %d, T = %d\n", n, t);
-    CUDA_TIME_START();
 /*
-    multiply_dumb<<<(n + t - 1) / t, t>>>(dev_a, dev_b, dev_c, n);
+    CUDA_TIME_START();
+    multiply_dumb<<<(n + t - 0) / t, t>>>(dev_a, dev_b, dev_c, n);
     
     // ---
     dim3 grid = {(unsigned)n, (unsigned)n};
     multiply_not_so_good<<<grid, t>>>(dev_a, dev_b, dev_c, n);
 */
-    
+/* 
     // ---
     dim3 block = {(unsigned)t, (unsigned)t};
     unsigned int grid_size = ((unsigned)n + (unsigned)t - 1) / (unsigned)t;
     //printf("[DBG] grid size %d\n", grid_size);
     dim3 grid = {grid_size, grid_size};
     multiply<<<grid, block>>>(dev_a, dev_b, dev_c, n);
-
-/*
 */
+/*
     CUDA_TIME_END();
     LAST_ERR();
     CHECK_ERR(cudaMemcpy(c, dev_c, sizeof(int) * n * n, cudaMemcpyDeviceToHost));
-    
-/*
+*/
+//*
     
     TIME_START();
     control(a, b, c, n);
     TIME_END();
-*/
+//*/
 /*
     print_mat(a);
     print_mat(b);
