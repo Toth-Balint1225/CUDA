@@ -14,6 +14,11 @@
 #include <error.h>
 #endif
 
+// wavelet transform test codes and drafts
+
+
+
+// control solution (copied from the serial CPU implementation)
 using Trafo = std::vector<std::vector<float>>;
 void control(float* s, float* w_mat, float* c, size_t M, size_t N, size_t F)
 {
@@ -25,6 +30,7 @@ void control(float* s, float* w_mat, float* c, size_t M, size_t N, size_t F)
 		}
 }
 
+// control checker for the tests
 void compare(float* trafo, float* control, size_t M, size_t N, size_t F)
 {
 	for (size_t i=0;i<F;i++) {
@@ -36,6 +42,8 @@ void compare(float* trafo, float* control, size_t M, size_t N, size_t F)
 	}
 }
 
+// working
+// this generates the specified frequency wavelet filter
 __device__ void gen_filter(float freq, size_t m, float wavelet_start, float morlet_base, float h, float* tester_r, float* tester_i)
 {
     size_t k = blockIdx.x * blockDim.x + threadIdx.x;
@@ -48,6 +56,7 @@ __device__ void gen_filter(float freq, size_t m, float wavelet_start, float morl
 	}
 }
 
+// function just to call the wavelet generator
 __global__ void test_kernel(float* signal, size_t n, size_t sample_num, float fmin, float fdiff, float* tester_r, float* tester_i, float wavelet_start, float morlet_base, float h, size_t m,  float* res, size_t res_width)
 {
 	float freq = 0.0;
@@ -59,6 +68,7 @@ __global__ void test_kernel(float* signal, size_t n, size_t sample_num, float fm
 	}
 }
 
+// not working, probably because of the grid cannot be synchronised
 __global__ void basic_kernel(float* signal, size_t n, size_t sample_num, float fmin, float fdiff, float* tester_r, float* tester_i, float wavelet_start, float morlet_base, float h, size_t m,  float* res, size_t res_width)
 {
     // set up indices
@@ -99,6 +109,7 @@ __global__ void basic_kernel(float* signal, size_t n, size_t sample_num, float f
 
 }
 
+// driver call for the previous kernel
 Trafo transform(std::vector<float> const& signal, float fmin, float fmax, size_t sample_num, float sample_freq)
 {
 	float fdiff = (fmax - fmin) / sample_num;
@@ -166,6 +177,14 @@ Trafo transform(std::vector<float> const& signal, float fmin, float fmax, size_t
 	return res_vec;
 }
 
+/**
+ * New approach:
+ * - generate the kernel on the host and copy it over as a matrix
+ * - compute the transform in a column-wise block thins
+ * - this will probably be better, because in the general case M >> N and M, N >> F
+ *   so in this case we can reduce memory reads and writes hopefully
+*/
+
 __global__ void conv_kernel_nogen(float* s, float* w_mat, float* c, size_t M, size_t N, size_t F)
 {
     size_t tid = blockDim.x * blockIdx.x + threadIdx.x;
@@ -185,6 +204,7 @@ __global__ void conv_kernel_nogen(float* s, float* w_mat, float* c, size_t M, si
 	}
 }
 
+// test driver for the previous kernel
 void conv_kernel_nogen_driver(size_t M, size_t N, size_t F)
 {
 	float* signal = new float[M];
@@ -226,28 +246,35 @@ void conv_kernel_nogen_driver(size_t M, size_t N, size_t F)
 
 }
 
+// effectively the wavelet transformation kernel, ready for streamification
 __global__ void wav_kernel_nogen(float* s, float* w_mat_re, float* w_mat_im, float* c, size_t M, size_t N, size_t F)
 {
     size_t tid = blockDim.x * blockIdx.x + threadIdx.x;
+
+	// important, that it only does stuff, if it's actually in the transformation range
 	if (! (tid < M+N-1))
 		return;
 
 
+	// outer loop iterates over rows of the wavelet matrix (frequencies)
 	for (size_t i=0;i<F;i++)
 	{
 		float acc_re = 0.0;
 		float acc_im = 0.0;
+		// inner loop does the convolution sum
 		for (size_t n=0;n<N;n++) {
 			if (tid - n < M) {
 				acc_re += w_mat_re[i * N + n] * s[tid - n];
 				acc_im += w_mat_im[i * N + n] * s[tid - n];
 			}
 		}
+		// finally, we use the complex norm in the i'th row of the transform
 		c[i * (M+N-1) + tid] = sqrt(acc_re*acc_re + acc_im*acc_im);
 		//printf("tid: %lu iteration %lu writing %f into c[%lu] \n", tid, i, acc, i * (M+N-1) + tid);
 	}
 }
 
+// test driver, with randomly generated data
 void wav_kernel_nogen_driver(size_t M, size_t N, size_t F)
 {
 	float* signal = new float[M];
@@ -304,8 +331,10 @@ void wav_kernel_nogen_driver(size_t M, size_t N, size_t F)
 
 }
 
+// test cases
 int main()
 {
+	// function generator from before
 	float sample_freq = 10;
 	auto x = sample(0, 5, sample_freq);
 	auto message_step = function(x, [](float x) -> float {
@@ -328,6 +357,7 @@ int main()
     plot_trafo(trafo);
 */
 
+	// tests for benchmarking
 	wav_kernel_nogen_driver(10000, 8000, 64);
 
 	CHECK_ERR(cudaDeviceReset());

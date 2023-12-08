@@ -72,6 +72,7 @@ void conv_driver1(size_t M, size_t N)
     float* res = new float[M+N-1];
     float* control_res = new float[M+N-1];
 
+    // fill up with dummy variables
     for (auto i=0;i<M;i++) {
         s[i] = std::rand() % 10;
     }
@@ -79,6 +80,7 @@ void conv_driver1(size_t M, size_t N)
         w[i] = std::rand() % 10;
     }
     
+    // GPU setup
     float *d_s, *d_w, *d_res;
     CHECK_ERR(cudaMalloc((void**)&d_s, M*sizeof(float)));
     CHECK_ERR(cudaMalloc((void**)&d_w, N*sizeof(float)));
@@ -87,10 +89,12 @@ void conv_driver1(size_t M, size_t N)
     CHECK_ERR(cudaMemcpy(d_s, s, M*sizeof(float), cudaMemcpyHostToDevice));
     CHECK_ERR(cudaMemcpy(d_w, w, N*sizeof(float), cudaMemcpyHostToDevice));
 
+    // execute
     conv_kernel1<<<(M+N+1022)/1024, 1024>>>(d_s, d_w, d_res, M, N);
     LAST_ERR();
 
     CHECK_ERR(cudaMemcpy(res, d_res, (M+N-1)*sizeof(float), cudaMemcpyDeviceToHost));
+    // safety check
     control(s, M, w, N, control_res);
     for (size_t i=0;i<(M+N-1);i++) {
         std::cout << res[i] - control_res[i] << " ";
