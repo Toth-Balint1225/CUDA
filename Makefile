@@ -1,3 +1,11 @@
+wavelet: wavelet.cu utils.cpp
+	nvcc -c utils.cpp
+	nvcc -c wavelet.cu
+	nvcc utils.o wavelet.o -o wavelet
+
+conv: conv.cu
+	nvcc $< -o $@
+
 run: matrix
 	./$< 10 1 > temp.txt
 

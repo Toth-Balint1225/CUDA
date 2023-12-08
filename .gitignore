@@ -4,3 +4,6 @@ matrix
 sum
 probe
 collect
+conv
+wavelet
+*.o

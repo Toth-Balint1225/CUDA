@@ -20,12 +20,11 @@ void print_props(int dev)
     printf("Total constant memory: %ld\n", props.totalConstMem);
     printf("Max mem pitch: %ld\n", props.memPitch);
     printf("Texture alignment: %ld\n", props.textureAlignment);
+    printf("Shared memory per mp: %ld\n", props.sharedMemPerBlock);
 
     printf("--- Multiprocess Information, device %d ---\n", dev);
     printf("Multiprocessor count: %d\n", props.multiProcessorCount);
-    printf("Shared memory per mp: %ld\n", props.sharedMemPerBlock);
     printf("Registers per block: %d\n", props.regsPerBlock);
-    printf("Shared memory per block %ld\n", props.sharedMemPerBlock);
     printf("Max threads per block: %d\n", props.maxThreadsPerBlock);
     printf("Max thread dimensions: (%d, %d, %d)\n", props.maxThreadsDim[0], props.maxThreadsDim[1], props.maxThreadsDim[2]);
     printf("Max grid dimensions: (%d, %d, %d)\n", props.maxGridSize[0], props.maxGridSize[1], props.maxGridSize[2]);
